@@ -776,9 +776,8 @@ p {
 
 /* ============== SCROLL REVEAL (60fps Optimized) ============== */
 .scroll-reveal {
-  opacity: 0;
+  opacity: 1;
   transform: none !important;
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-reveal.is-visible {
@@ -794,8 +793,8 @@ p {
 .section.scroll-reveal,
 .motion-showcase-section.scroll-reveal,
 .cta.scroll-reveal {
+  opacity: 1 !important;
   transform: none !important;
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Maintain visual stability during scrolling: prevent upward translation on sections and section headings */
@@ -8930,7 +8929,6 @@ img.fx-parallax,
 
 /* ---------- Marquee band: slight skew room while velocity-boosted ---------- */
 .marquee {
-  will-change: transform;
   transform-origin: center;
 }
 
@@ -9162,10 +9160,9 @@ img.fx-parallax,
    so it replays when scrolling back up. Everything settles fully
    opaque/untransformed so text stays perfectly readable afterward. */
 .page-intro-content {
-  /* container itself only fades slightly */
-  opacity: 0;
+  /* container itself remains visible for seamless section transition */
+  opacity: 1;
   transform: none;
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .page-intro-content.visible {
@@ -10834,19 +10831,19 @@ img.fx-parallax,
 
   0%,
   100% {
-    transform: translateY(calc(var(--scroll-y, 0px) + 0px)) rotate(0deg);
+    transform: translateY(0px) rotate(0deg);
   }
 
   25% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 9px)) rotate(1.5deg);
+    transform: translateY(-9px) rotate(1.5deg);
   }
 
   50% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 4px)) rotate(-1deg);
+    transform: translateY(-4px) rotate(-1deg);
   }
 
   75% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 13px)) rotate(1deg);
+    transform: translateY(-13px) rotate(1deg);
   }
 }
 
@@ -10854,11 +10851,11 @@ img.fx-parallax,
 
   0%,
   100% {
-    transform: translateY(calc(var(--scroll-y, 0px) + 0px)) rotate(0deg);
+    transform: translateY(0px) rotate(0deg);
   }
 
   50% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 15px)) rotate(2deg);
+    transform: translateY(-15px) rotate(2deg);
   }
 }
 
@@ -10866,15 +10863,15 @@ img.fx-parallax,
 
   0%,
   100% {
-    transform: translateY(calc(var(--scroll-y, 0px) + 0px)) rotate(0deg);
+    transform: translateY(0px) rotate(0deg);
   }
 
   33% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 10px)) rotate(-1.5deg);
+    transform: translateY(-10px) rotate(-1.5deg);
   }
 
   66% {
-    transform: translateY(calc(var(--scroll-y, 0px) - 5px)) rotate(1deg);
+    transform: translateY(-5px) rotate(1deg);
   }
 }
 
@@ -11934,11 +11931,11 @@ img.fx-parallax,
 
   0%,
   100% {
-    transform: translateY(calc(var(--scroll-y, 0px) + 0px)) rotateY(0deg);
+    transform: translateY(0px) rotateY(0deg);
   }
 
   50% {
-    transform: translateY(calc(var(--scroll-y, 0px) - var(--float-dist))) rotateY(8deg);
+    transform: translateY(calc(-1 * var(--float-dist, 8px))) rotateY(8deg);
   }
 }
 
@@ -12059,22 +12056,9 @@ img.fx-parallax,
   z-index: 1;
 }
 
-/* refined chip book: thin profile, gilt ribbon, gentle idle sway */
+/* refined chip book: thin profile, gilt ribbon, elegant stable posture */
 .book-chip .floating-book {
   transform: rotate(-14deg);
-  animation: chipFloat 5.5s ease-in-out infinite;
-}
-
-@keyframes chipFloat {
-
-  0%,
-  100% {
-    transform: rotate(-14deg) translateY(0);
-  }
-
-  50% {
-    transform: rotate(-9deg) translateY(-7px);
-  }
 }
 
 .book-chip .floating-book .fb-book::after {
@@ -15427,7 +15411,7 @@ textarea:focus-visible {
 /* 1. Subpage Drone Scroll Frame Hero (Contact & Sports) */
 .subpage-frame-hero {
   position: relative;
-  height: 380vh;
+  height: 520vh;
   background: #051f33;
 }
 
@@ -15531,8 +15515,8 @@ textarea:focus-visible {
   width: 100%;
   box-sizing: border-box;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
   background: rgba(5, 31, 51, 0.94);
   border: 1px solid rgba(212, 160, 23, 0.36);
@@ -15543,7 +15527,7 @@ textarea:focus-visible {
 
 .hero-stage-caption.is-active {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
   pointer-events: auto;
 }
 

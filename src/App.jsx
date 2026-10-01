@@ -8,6 +8,10 @@ import React, {
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  window.ScrollTrigger = ScrollTrigger;
+}
 import Lenis from "lenis";
 import ScrollFX from "./scrollFX";
 import {
@@ -482,7 +486,7 @@ const galleryItems = [
     title: "Learning beyond four walls",
   },
   {
-    image: IMG.gallery1,
+    image: IMG.academicsbg,
     category: "Campus",
     title: "Architectural grandeur & grounds",
   },
@@ -504,7 +508,7 @@ const galleryItems = [
     title: "Grandmaster tactics & focus",
   },
   {
-    image: IMG.athletics,
+    image: IMG.ataglancebg,
     category: "Sports",
     title: "Track & field athletics meet",
   },
@@ -1902,10 +1906,13 @@ function SmoothScroll() {
 
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.08,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: 1.5,
+      touchMultiplier: 1.2,
       syncTouch: false,
       infinite: false,
       autoRaf: false,
@@ -1915,25 +1922,21 @@ function SmoothScroll() {
 
     let scrollTimer = null;
     const onLenisScroll = (e) => {
-      if (e && Math.abs(e.velocity || 0) > 0.05) {
+      const isMoving = e && (Math.abs(e.velocity || 0) > 0.01 || lenis.isScrolling);
+      if (isMoving) {
         window.__isUserScrolling = true;
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(() => {
           window.__isUserScrolling = false;
-        }, 700);
+        }, 200);
       }
       ScrollTrigger.update();
     };
     lenis.on("scroll", onLenisScroll);
 
-    const onRefresh = () => {
-      lenis.resize();
-    };
-    ScrollTrigger.addEventListener("refresh", onRefresh);
-
     const update = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(update, false, true);
-    gsap.ticker.lagSmoothing(500, 33);
+    gsap.ticker.lagSmoothing(0);
 
     const onOpenModal = () => lenis.stop();
     const onCloseModal = () => lenis.start();
@@ -1946,7 +1949,6 @@ function SmoothScroll() {
       cancelScrollRefresh();
       window.removeEventListener("open-admission-modal", onOpenModal);
       window.removeEventListener("close-admission-modal", onCloseModal);
-      ScrollTrigger.removeEventListener("refresh", onRefresh);
       lenis.off("scroll", onLenisScroll);
       gsap.ticker.remove(update);
       lenis.destroy();
@@ -2162,10 +2164,10 @@ function HorizontalScrollStrip({ items }) {
           end: () => `+=${getTravel()}`,
           pin: true,
           pinSpacing: true,
-          scrub: 0.8,
+          scrub: true,
           anticipatePin: 0,
           invalidateOnRefresh: true,
-          fastScrollEnd: false,
+          fastScrollEnd: true,
           onRefresh: () => { },
         },
       });
@@ -2874,7 +2876,8 @@ function Hero() {
         trigger: sectionRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.15,
+        scrub: true,
+        fastScrollEnd: true,
       },
       onUpdate: () => {
         const frameIndex = Math.min(
@@ -2903,7 +2906,9 @@ function Hero() {
     const onReady = () => {
       syncFrames();
       updateCanvasDimensions();
-      tween.scrollTrigger?.refresh();
+      if (!window.__isUserScrolling) {
+        tween.scrollTrigger?.refresh();
+      }
       lastDrawnFrameRef.current = -1;
       drawFrame(currentFrameRef.current || 0);
     };
@@ -2914,7 +2919,9 @@ function Hero() {
       onReady();
       requestAnimationFrame(() => {
         updateCanvasDimensions();
-        tween.scrollTrigger?.refresh();
+        if (!window.__isUserScrolling) {
+          tween.scrollTrigger?.refresh();
+        }
         drawFrame(currentFrameRef.current || 0);
       });
     }
@@ -3219,7 +3226,7 @@ function useScrollAnimatedWord(ref) {
           trigger: ref.current,
           start: "top 85%",
           end: "bottom 55%",
-          scrub: 0.8,
+          scrub: true,
           invalidateOnRefresh: true,
         },
         onComplete: () => {
@@ -3405,7 +3412,7 @@ function PageHero({ kicker, title, desc, image = IMG.hero, children }) {
           trigger: hero,
           start: "top top",
           end: "bottom top",
-          scrub: 0.8,
+          scrub: true,
         },
       });
 
@@ -3696,16 +3703,16 @@ function ScrollFrameHero({ variant = "contact" }) {
       if (copyRef.current) {
         if (clampedP <= 0.02) {
           copyRef.current.style.opacity = "1";
-          copyRef.current.style.transform = "translateY(0px)";
+          copyRef.current.style.transform = "none";
           copyRef.current.style.pointerEvents = "auto";
-        } else if (clampedP < 0.14) {
-          const fade = 1 - (clampedP - 0.02) / 0.12;
+        } else if (clampedP < 0.16) {
+          const fade = 1 - (clampedP - 0.02) / 0.14;
           copyRef.current.style.opacity = Math.max(0, fade).toFixed(3);
-          copyRef.current.style.transform = `translateY(-${((1 - fade) * 20).toFixed(1)}px)`;
+          copyRef.current.style.transform = "none";
           copyRef.current.style.pointerEvents = fade > 0.3 ? "auto" : "none";
         } else {
           copyRef.current.style.opacity = "0";
-          copyRef.current.style.transform = "translateY(-20px)";
+          copyRef.current.style.transform = "none";
           copyRef.current.style.pointerEvents = "none";
         }
       }
@@ -3758,7 +3765,8 @@ function ScrollFrameHero({ variant = "contact" }) {
         trigger: sectionRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.15,
+        scrub: true,
+        fastScrollEnd: true,
       },
       onUpdate: () => {
         const p = Math.max(0, Math.min(1, playhead.frame / (frameCount - 1)));
@@ -3769,7 +3777,9 @@ function ScrollFrameHero({ variant = "contact" }) {
     const onLoaderDone = () => {
       syncFrames();
       updateCanvasDimensions();
-      tween.scrollTrigger?.refresh();
+      if (!window.__isUserScrolling) {
+        tween.scrollTrigger?.refresh();
+      }
       lastDrawnFrameRef.current = -1;
       drawFrame(currentFrameRef.current);
     };
@@ -3778,7 +3788,9 @@ function ScrollFrameHero({ variant = "contact" }) {
     const onAllReady = () => {
       syncFrames();
       updateCanvasDimensions();
-      tween.scrollTrigger?.refresh();
+      if (!window.__isUserScrolling) {
+        tween.scrollTrigger?.refresh();
+      }
       lastDrawnFrameRef.current = -1;
       drawFrame(currentFrameRef.current);
     };
@@ -3789,7 +3801,9 @@ function ScrollFrameHero({ variant = "contact" }) {
       onLoaderDone();
       requestAnimationFrame(() => {
         updateCanvasDimensions();
-        tween.scrollTrigger?.refresh();
+        if (!window.__isUserScrolling) {
+          tween.scrollTrigger?.refresh();
+        }
         drawFrame(currentFrameRef.current);
       });
     }
@@ -4139,7 +4153,8 @@ function FeatureFlythrough() {
         trigger: scroller,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.8,
+        scrub: true,
+        fastScrollEnd: true,
         onUpdate: (self) => scheduleFlight(self.progress),
       });
 
@@ -4953,7 +4968,8 @@ function QuoteSectionLegacy() {
           trigger: section,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.8,
+          scrub: true,
+          fastScrollEnd: true,
           // No GSAP pin here — the section already pins via CSS sticky
           // (.quote-section 400vh + .quote-sticky 100vh). A GSAP pin on top
           // of CSS sticky breaks on inner pages (containing-block and
@@ -6173,7 +6189,7 @@ function ContentPage({ data }) {
             trigger: intro,
             start: "top bottom",
             end: "bottom top",
-            scrub: 0.8,
+            scrub: true,
           },
         },
       );
@@ -6420,7 +6436,7 @@ function PossibilitySection({
           trigger: heading || word,
           start: "top 75%",
           end: "top 25%",
-          scrub: 0.8,
+          scrub: true,
           invalidateOnRefresh: true,
         },
       });
@@ -7293,7 +7309,8 @@ function GalleryFlythrough() {
       trigger: wrap,
       start: "top top",
       end: "bottom bottom",
-      scrub: 0.8,
+      scrub: true,
+      fastScrollEnd: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         scheduleTransforms(self.progress);
@@ -8721,8 +8738,8 @@ function Footer() {
 // =========================================
 
 const ANIMATION_CONFIG = {
-  // Scrub factor: 0.8 = smooth GSAP physics interpolation for silky 3D page turns
-  scrollScrub: 0.8,
+  // Scrub factor: true = 1:1 synchronization with Lenis smooth scroll momentum
+  scrollScrub: true,
   // Full 180° flip — pages lie flat when fully open
   pageTurnAngle: -180,
   coverTurnAngle: -180,
@@ -9183,6 +9200,7 @@ function QuoteBook() {
           start: "top top",
           end: "bottom bottom",
           scrub: scrollScrub,
+          fastScrollEnd: true,
           invalidateOnRefresh: true,
           onLeave: () => sectionRef.current?.classList.add("qb-past"),
           onEnterBack: () => sectionRef.current?.classList.remove("qb-past"),

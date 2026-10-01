@@ -68,7 +68,7 @@ export default function ScrollFX() {
               trigger: holder,
               start: "top bottom",
               end: "bottom top",
-              scrub: 0.8,
+              scrub: true,
             },
           },
         );
@@ -86,13 +86,15 @@ export default function ScrollFX() {
             scrollTrigger: { trigger: el, start: "top 92%", once: true },
             onComplete: () => {
               gsap.set(el, { clearProps: "opacity" });
-              if (innerImg) gsap.set(innerImg, { clearProps: "transform,scale" });
+              if (innerImg && !innerImg.classList.contains("fx-parallax")) {
+                gsap.set(innerImg, { clearProps: "transform,scale" });
+              }
               el.classList.add("revealed");
             },
           });
           tl.fromTo(el, { opacity: 0.88 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
           if (innerImg) {
-            tl.fromTo(innerImg, { scale: 1.06 }, { scale: 1.0, duration: 0.6, ease: "power2.out" }, 0);
+            tl.fromTo(innerImg, { scale: 1.05 }, { scale: 1.0, duration: 0.6, ease: "power2.out" }, 0);
           }
         });
 
@@ -119,12 +121,10 @@ export default function ScrollFX() {
               const v = Math.abs(self.getVelocity()) / 900;
               const targetSpeed = v > 0.15 ? clampSpeed(1 + v) : 1;
               const currentSpeed = marqueeTween.timeScale();
-              if (Math.abs(targetSpeed - currentSpeed) > 0.1) {
-                gsap.to(marqueeTween, {
-                  timeScale: targetSpeed,
-                  duration: targetSpeed > 1 ? 0.35 : 0.8,
-                  overwrite: "auto",
-                });
+              if (Math.abs(targetSpeed - currentSpeed) > 0.04) {
+                marqueeTween.timeScale(
+                  currentSpeed + (targetSpeed - currentSpeed) * 0.25
+                );
               }
               marqueeVelocityTicking = false;
             });
@@ -150,12 +150,11 @@ export default function ScrollFX() {
       );
       if (stats.length) {
         gsap.from(stats, {
-          y: 34,
+          y: 0,
           opacity: 0,
-          rotate: 2,
           stagger: 0.09,
-          duration: 0.9,
-          ease: "back.out(1.8)",
+          duration: 0.8,
+          ease: "power2.out",
           scrollTrigger: {
             trigger: ".stat-strip",
             start: "top 88%",
@@ -223,10 +222,10 @@ export default function ScrollFX() {
       const footerLinks = document.querySelectorAll(".footer-links > div");
       if (footerLinks.length) {
         gsap.from(footerLinks, {
-          y: 40,
+          y: 0,
           opacity: 0,
           stagger: 0.12,
-          duration: 0.9,
+          duration: 0.8,
           ease: "power3.out",
           scrollTrigger: { trigger: ".footer", start: "top 82%", once: true },
         });
@@ -540,15 +539,18 @@ export default function ScrollFX() {
 
       /* ---------- 22. AARDVARK-INSPIRED: Floating Books (Viewport-Throttled) ----------
          Depth-aware parallax: near books drift more, far books less.
-         Paused automatically when off-screen to preserve 60fps scroll. */
+         Paused automatically when off-screen to preserve 60fps scroll.
+         CRITICAL: Only pause ambient sine-wave drift tweens, NOT ScrollTrigger scrub tweens! */
       const bookObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            const tweens = gsap.getTweensOf(entry.target);
-            if (entry.isIntersecting) {
-              tweens.forEach((tw) => tw.play());
-            } else {
-              tweens.forEach((tw) => tw.pause());
+            const tweens = entry.target.__driftTweens;
+            if (tweens) {
+              if (entry.isIntersecting) {
+                tweens.forEach((tw) => tw.play());
+              } else {
+                tweens.forEach((tw) => tw.pause());
+              }
             }
           });
         },
@@ -558,14 +560,14 @@ export default function ScrollFX() {
       gsap.utils.toArray(".floating-book").forEach((book, i) => {
         const far = book.classList.contains("floating-book--depth-far");
         const amp = far ? 6 : 12;
-        gsap.to(book, {
+        const twX = gsap.to(book, {
           x: i % 2 ? -amp : amp,
           duration: 7 + (i % 4) * 1.4,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
         });
-        gsap.to(book, {
+        const twR = gsap.to(book, {
           rotate: (i % 2 ? 1 : -1) * (far ? 3 : 5),
           duration: 5 + (i % 3) * 0.9,
           repeat: -1,
@@ -573,6 +575,7 @@ export default function ScrollFX() {
           ease: "sine.inOut",
           delay: i * 0.3,
         });
+        book.__driftTweens = [twX, twR];
         bookObserver.observe(book);
       });
 
@@ -594,7 +597,7 @@ export default function ScrollFX() {
                   trigger: cloud.closest(".hero-scroll") || cloud,
                   start: "top top",
                   end: "bottom bottom",
-                  scrub: 0.8,
+                  scrub: true,
                 },
               },
             );
@@ -603,7 +606,7 @@ export default function ScrollFX() {
 
       /* ---------- 23b. Subtle 3D scrub tilt on the layered books ---------- */
       gsap.utils
-        .toArray(".floating-book:not(.floating-book--depth-far)")
+        .toArray(".floating-books-decoration .floating-book:not(.floating-book--depth-far)")
         .forEach((book, i) => {
           gsap.fromTo(
             book.querySelector(".floating-book-inner"),
@@ -616,7 +619,7 @@ export default function ScrollFX() {
                 trigger: book,
                 start: "top bottom",
                 end: "bottom top",
-                scrub: 0.8,
+                scrub: true,
               },
             },
           );
@@ -628,24 +631,36 @@ export default function ScrollFX() {
         head.dataset.fxSweep = "1";
         const kicker = head.querySelector(".sh-kicker");
         const rule = head.querySelector(".sh-rule");
+        if (!rule && !kicker) return;
+
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: head, start: "top 86%", once: true },
+        });
         if (rule) {
-          gsap.from(rule, {
-            scaleX: 0,
-            transformOrigin: "left center",
-            duration: 0.9,
-            ease: "power3.out",
-            scrollTrigger: { trigger: head, start: "top 86%", once: true },
-          });
+          rule.dataset.fxRule = "1";
+          tl.from(
+            rule,
+            {
+              scaleX: 0,
+              transformOrigin: "left center",
+              duration: 0.9,
+              ease: "power3.out",
+            },
+            0,
+          );
         }
         if (kicker) {
-          gsap.from(kicker, {
-            opacity: 0,
-            y: 0,
-            letterSpacing: "0.35em",
-            duration: 1,
-            ease: "power3.out",
-            scrollTrigger: { trigger: head, start: "top 86%", once: true },
-          });
+          tl.from(
+            kicker,
+            {
+              opacity: 0,
+              y: 0,
+              letterSpacing: "0.35em",
+              duration: 1,
+              ease: "power3.out",
+            },
+            0,
+          );
         }
       });
 
@@ -669,10 +684,11 @@ export default function ScrollFX() {
               r = card.getBoundingClientRect();
             });
             card.addEventListener("mousemove", (e) => {
+              if (window.__isUserScrolling) return;
               if (moveRaf) return;
               moveRaf = true;
               requestAnimationFrame(() => {
-                if (!r) r = card.getBoundingClientRect();
+                r = card.getBoundingClientRect();
                 const px = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
                 const py = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
                 ry(px * 7);
@@ -770,12 +786,10 @@ export default function ScrollFX() {
                 const v = Math.abs(self.getVelocity()) / 1100;
                 const targetScale = v > 0.12 ? gsap.utils.clamp(1, 3)(1 + v) : 1;
                 const currentScale = emTween.timeScale();
-                if (Math.abs(targetScale - currentScale) > 0.08) {
-                  gsap.to(emTween, {
-                    timeScale: targetScale,
-                    duration: targetScale > 1 ? 0.35 : 0.8,
-                    overwrite: "auto",
-                  });
+                if (Math.abs(targetScale - currentScale) > 0.04) {
+                  emTween.timeScale(
+                    currentScale + (targetScale - currentScale) * 0.25
+                  );
                 }
                 emVelocityTicking = false;
               });
@@ -879,7 +893,7 @@ export default function ScrollFX() {
                   containerAnimation: hscrollTween,
                   start: "left right",
                   end: "right left",
-                  scrub: 0.8,
+                  scrub: true,
                 },
               }
             );
@@ -960,7 +974,7 @@ export default function ScrollFX() {
               trigger: h,
               start: "top 88%",
               end: "top 55%",
-              scrub: 0.8,
+              scrub: true,
             },
           }
         );
@@ -986,40 +1000,14 @@ export default function ScrollFX() {
       gsap.utils.toArray(".academic-card-num, .honor-year-num").forEach((num) => {
         if (num.dataset.fxDrift) return;
         num.dataset.fxDrift = "1";
-        gsap.fromTo(
-          num,
-          { y: -14 },
-          {
-            y: 14,
-            ease: "none",
-            scrollTrigger: {
-              trigger: num.closest("article, .story-row, .journey-card") || num,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.8,
-            },
-          }
-        );
+        // Visually stable inside card container without scroll jitter
       });
 
       /* ---------- 44. Document card numeral float (MH Design Build style) ---------- */
       gsap.utils.toArray(".document-card .doc-num").forEach((num) => {
         if (num.dataset.fxDrift) return;
         num.dataset.fxDrift = "1";
-        gsap.fromTo(
-          num,
-          { y: -10 },
-          {
-            y: 10,
-            ease: "none",
-            scrollTrigger: {
-              trigger: num.closest(".document-card") || num,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.8,
-            },
-          }
-        );
+        // Visually stable inside card container without scroll jitter
       });
 
       /* ---------- 45. Documents meta banner reveal (The B Hive Resort style) ---------- */
@@ -1053,7 +1041,7 @@ export default function ScrollFX() {
               trigger: ".intro-image.interactive-showcase",
               start: "top bottom",
               end: "bottom top",
-              scrub: 0.8,
+              scrub: true,
             },
           }
         );
@@ -1061,21 +1049,7 @@ export default function ScrollFX() {
 
       /* ---------- 47. Floating Depth Badges Parallax (SeaSats Style) ---------- */
       gsap.utils.toArray(".floating-depth-badge").forEach((badge) => {
-        const speed = parseFloat(badge.dataset.speed || "1");
-        gsap.fromTo(
-          badge,
-          { y: -26 * speed },
-          {
-            y: 26 * speed,
-            ease: "none",
-            scrollTrigger: {
-              trigger: badge.closest(".interactive-showcase") || badge,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.8,
-            },
-          }
-        );
+        // Kept visually stable without jitter
       });
 
       /* ---------- 48. Atmospheric Background Aura Drift (SeaSats Style) ---------- */
@@ -1085,12 +1059,12 @@ export default function ScrollFX() {
         gsap.to(auraGold, {
           y: "22vh",
           ease: "none",
-          scrollTrigger: { start: "top top", end: "max", scrub: 1.2 },
+          scrollTrigger: { start: "top top", end: "max", scrub: true },
         });
         gsap.to(auraEmerald, {
           y: "-18vh",
           ease: "none",
-          scrollTrigger: { start: "top top", end: "max", scrub: 1.2 },
+          scrollTrigger: { start: "top top", end: "max", scrub: true },
         });
       }
 
@@ -1111,7 +1085,7 @@ export default function ScrollFX() {
           if (glowRaf) return;
           glowRaf = true;
           requestAnimationFrame(() => {
-            if (!rect) rect = card.getBoundingClientRect();
+            rect = card.getBoundingClientRect();
             card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
             card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
             glowRaf = false;
