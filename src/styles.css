@@ -798,6 +798,20 @@ p {
   transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Maintain visual stability during scrolling: prevent upward translation on sections and section headings */
+.section,
+.section-head,
+.page-hero-content,
+.content-page,
+[data-reveal]:not([data-reveal="scale"]):not([data-reveal="clip"]) {
+  transform: none;
+}
+
+.section [data-reveal]:not([data-reveal="scale"]):not([data-reveal="clip"]),
+.content-page [data-reveal]:not([data-reveal="scale"]):not([data-reveal="clip"]) {
+  transform: none;
+}
+
 /* ============== SMOOTH ZOOM ============== */
 .smooth-zoom {
   overflow: hidden;
@@ -2780,10 +2794,8 @@ p {
 
 .page-hero-content [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 20px, 0);
-  transition:
-    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .page-hero-content [data-reveal].revealed {
@@ -2794,10 +2806,8 @@ p {
 .section [data-reveal],
 .content-page [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 20px, 0);
-  transition:
-    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .section [data-reveal].revealed,
@@ -3286,7 +3296,7 @@ p {
   from {
     opacity: 0;
     clip-path: inset(8% 4% 8% 4%);
-    transform: translateY(22px) scale(1.04);
+    transform: translateY(0) scale(1.04);
   }
 
   to {
@@ -6476,16 +6486,14 @@ p {
 
 [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 18px, 0);
-  will-change: transform, opacity;
-  transition:
-    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  will-change: opacity;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-reveal].revealed {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: none;
   will-change: auto;
 }
 
@@ -6603,7 +6611,7 @@ img {
 
 @media (max-width: 768px) {
   .page-transition {
-    transform: translateY(10px);
+    transform: none;
   }
 
   .book-stage {
@@ -6631,7 +6639,7 @@ img {
   }
 
   [data-reveal] {
-    transform: translateY(25px);
+    transform: none;
   }
 }
 
@@ -7003,12 +7011,12 @@ body.modal-open {
 @keyframes galleryTileFadeIn {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.98);
+    transform: scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
 }
 
@@ -8513,10 +8521,8 @@ body.modal-open {
 /* ---------- Cinematic text reveal (60fps Optimized) ---------- */
 [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 20px, 0);
-  transition:
-    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-reveal].revealed {
@@ -8559,15 +8565,13 @@ body.modal-open {
 /* ---------- Section entrance ---------- */
 .section-animate {
   opacity: 0;
-  transform: translateY(60px);
-  transition:
-    opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .section-animate.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* ---------- Premium hover lift ---------- */
@@ -8729,10 +8733,8 @@ body.modal-open {
 /* ---------- Fade in up stagger list ---------- */
 .stagger-fade>* {
   opacity: 0;
-  transform: translateY(20px);
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.6s ease;
 }
 
 .stagger-fade.visible>*:nth-child(1) {
@@ -8761,7 +8763,7 @@ body.modal-open {
 
 .stagger-fade.visible>* {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* ---------- Magnetic scale ---------- */
@@ -9160,23 +9162,21 @@ img.fx-parallax,
    so it replays when scrolling back up. Everything settles fully
    opaque/untransformed so text stays perfectly readable afterward. */
 .page-intro-content {
-  /* container itself only fades slightly; children carry the motion */
+  /* container itself only fades slightly */
   opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .page-intro-content.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* Image column — cinematic slide + fade from the left */
 .page-intro-content .intro-feature-image {
   opacity: 0;
-  transform: translateX(-40px) scale(0.98);
+  transform: scale(0.98);
   transition:
     opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
     transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
@@ -9198,10 +9198,8 @@ img.fx-parallax,
    --reveal-i is set per-child by scrollFX (0,1,2,3...). */
 .page-intro-content .page-intro-copy>* {
   opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: none;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: calc(0.25s + var(--reveal-i, 0) * 0.12s);
 }
 
@@ -11383,15 +11381,13 @@ img.fx-parallax,
 /* Scroll-triggered fade up */
 .scroll-fade-up {
   opacity: 0;
-  transform: translateY(40px);
-  transition:
-    opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: none;
+  transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .scroll-fade-up.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* Scroll-triggered scale */
@@ -13511,17 +13507,15 @@ img.fx-parallax,
 
 .sr-word {
   display: inline-block;
-  transform: translateY(110%);
+  transform: none;
   opacity: 0;
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 
 .sr-word.sr-visible {
-  transform: translateY(0);
+  transform: none;
   opacity: 1;
-  transition:
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.5s ease;
+  transition: opacity 0.5s ease;
 }
 
 /* =========================================================
@@ -15668,16 +15662,16 @@ textarea:focus-visible {
 
 .reveal-word {
   display: inline-block;
-  transform: translateY(115%);
-  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s ease;
+  transform: none;
+  transition: opacity 0.85s ease;
   opacity: 0.1;
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 
 .revealed .reveal-word,
 .is-visible .reveal-word,
 .page-hero-title .reveal-word {
-  transform: translateY(0%);
+  transform: none;
   opacity: 1;
 }
 

@@ -640,7 +640,7 @@ export default function ScrollFX() {
         if (kicker) {
           gsap.from(kicker, {
             opacity: 0,
-            y: 10,
+            y: 0,
             letterSpacing: "0.35em",
             duration: 1,
             ease: "power3.out",
@@ -951,7 +951,7 @@ export default function ScrollFX() {
         if (h.dataset.fxRise) return;
         h.dataset.fxRise = "1";
         gsap.fromTo(h,
-          { yPercent: 12, opacity: 0.35 },
+          { yPercent: 0, opacity: 0.35 },
           {
             yPercent: 0,
             opacity: 1,
@@ -1028,7 +1028,7 @@ export default function ScrollFX() {
         banner.dataset.fxBanner = "1";
         gsap.fromTo(
           banner,
-          { y: 24, opacity: 0.6 },
+          { y: 0, opacity: 0.6 },
           {
             y: 0,
             opacity: 1,

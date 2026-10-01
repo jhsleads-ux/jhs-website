@@ -3201,10 +3201,10 @@ function useScrollAnimatedWord(ref) {
     }
 
     const ctx = gsap.context(() => {
-      // Subtle, tasteful vertical reveal - prevents horizontal blowout and letter clipping
+      // Subtle, tasteful reveal - prevents horizontal blowout and keeps layout stable
       gsap.set(characters, {
         opacity: 0,
-        y: 14,
+        y: 0,
         scale: 0.98,
         willChange: "transform, opacity",
       });
