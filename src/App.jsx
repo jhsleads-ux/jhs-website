@@ -2634,6 +2634,13 @@ function Hero() {
   const lastDrawnFrameRef = useRef(-1);
   const contextRef = useRef(null);
 
+  const syncFrames = useCallback(() => {
+    if (heroFramesCache) {
+      framesRef.current = heroFramesCache;
+      heroDecoder.setImages(heroFramesCache);
+    }
+  }, []);
+
   const getCanvasContext = useCallback(() => {
     if (contextRef.current) return contextRef.current;
     const canvas = canvasRef.current;
@@ -2895,7 +2902,7 @@ function Hero() {
       window.removeEventListener("hero-all-frames-ready", onReady);
       tween.kill();
     };
-  }, [paintFrameToCanvas, updateCanvasDimensions]);
+  }, [paintFrameToCanvas, updateCanvasDimensions, syncFrames]);
 
   return (
     <section ref={sectionRef} className="hero-scroll">
@@ -3455,6 +3462,14 @@ function ScrollFrameHero({ variant = "contact" }) {
   const canvasDimsRef = useRef({ width: 0, height: 0, dpr: 1 });
   const contextRef = useRef(null);
 
+  const syncFrames = useCallback(() => {
+    const cache = isContact ? contactFramesCache : sportsFramesCache;
+    if (cache) {
+      framesRef.current = cache;
+      decoder.setImages(cache);
+    }
+  }, [isContact, decoder]);
+
   const getCanvasContext = useCallback(() => {
     if (contextRef.current) return contextRef.current;
     const canvas = canvasRef.current;
@@ -3753,7 +3768,7 @@ function ScrollFrameHero({ variant = "contact" }) {
       window.removeEventListener(readyEvent, onAllReady);
       tween.kill();
     };
-  }, [variant, frameCount, isContact, paintFrameToCanvas, updateCanvasDimensions]);
+  }, [variant, frameCount, isContact, paintFrameToCanvas, updateCanvasDimensions, syncFrames]);
 
   return (
     <section ref={sectionRef} className={`hero-scroll subpage-frame-hero ${isContact ? "contact-hero" : "sports-hero"}`}>
