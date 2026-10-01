@@ -721,11 +721,10 @@ if (eagerHeroFirstFrame) {
 }
 
 export function areHeroFramesLoaded() {
-  return (
+  return Boolean(
     heroFramesCache &&
     heroFramesCache.length === HERO_FRAME_COUNT &&
-    heroLoadedCount >= HERO_FRAME_COUNT &&
-    heroDecoder.isBatchDecoded(0, 16)
+    heroLoadedCount >= HERO_FRAME_COUNT
   );
 }
 
@@ -832,8 +831,8 @@ function preloadHeroFrames(onProgress) {
       if (img && w > 0) {
         frames[currentIndex - 1] = img;
         heroDecoder.setFrame(currentIndex - 1, img);
-        if (currentIndex <= 16) {
-          heroDecoder.decodeSingleFrame(currentIndex - 1);
+        if (typeof img.decode === "function") {
+          img.decode().catch(() => { });
         }
       }
       loadedCount++;
@@ -950,11 +949,10 @@ if (eagerContactFirstFrame) {
 }
 
 export function areContactFramesLoaded() {
-  return (
+  return Boolean(
     contactFramesCache &&
     contactFramesCache.length === CONTACT_FRAME_COUNT &&
-    contactLoadedCount >= CONTACT_FRAME_COUNT &&
-    contactDecoder.isBatchDecoded(0, 14)
+    contactLoadedCount >= CONTACT_FRAME_COUNT
   );
 }
 
@@ -1049,8 +1047,8 @@ function preloadContactFrames(onProgress) {
       if (img && w > 0) {
         frames[currentIndex - 1] = img;
         contactDecoder.setFrame(currentIndex - 1, img);
-        if (currentIndex <= 14) {
-          contactDecoder.decodeSingleFrame(currentIndex - 1);
+        if (typeof img.decode === "function") {
+          img.decode().catch(() => { });
         }
       }
       loadedCount++;
@@ -1163,11 +1161,10 @@ if (eagerSportsFirstFrame) {
 }
 
 export function areSportsFramesLoaded() {
-  return (
+  return Boolean(
     sportsFramesCache &&
     sportsFramesCache.length === SPORTS_FRAME_COUNT &&
-    sportsLoadedCount >= SPORTS_FRAME_COUNT &&
-    sportsDecoder.isBatchDecoded(0, 14)
+    sportsLoadedCount >= SPORTS_FRAME_COUNT
   );
 }
 
@@ -1262,8 +1259,8 @@ function preloadSportsFrames(onProgress) {
       if (img && w > 0) {
         frames[currentIndex - 1] = img;
         sportsDecoder.setFrame(currentIndex - 1, img);
-        if (currentIndex <= 14) {
-          sportsDecoder.decodeSingleFrame(currentIndex - 1);
+        if (typeof img.decode === "function") {
+          img.decode().catch(() => { });
         }
       }
       loadedCount++;
@@ -1380,13 +1377,15 @@ function idlePrefetchOtherFrames() {
   }
 }
 
+let hasCompletedInitialLoad = false;
+
 function GlobalLoader() {
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(1);
+  const [loading, setLoading] = useState(!hasCompletedInitialLoad);
+  const [progress, setProgress] = useState(hasCompletedInitialLoad ? 100 : 1);
   const lineRef = useRef(null);
   const percentRef = useRef(null);
-  const isFirstLoadRef = useRef(true);
+  const isFirstLoadRef = useRef(!hasCompletedInitialLoad);
 
   // Lock scrolling completely while assets & all target frames are loading
   useEffect(() => {
@@ -1414,12 +1413,28 @@ function GlobalLoader() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setProgress(1);
 
     const pathname = location.pathname;
     const cleanPath = pathname.replace(/\/+$/, "") || "/";
     const isHomePage = cleanPath === "/";
+
+    // Fast path: On internal navigation back to Home, do NOT replay the full preloader.
+    // Ensure Home loads immediately, keep scrolling active, and signal ready.
+    if (!isFirstLoadRef.current && isHomePage) {
+      setLoading(false);
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      if (window.__lenis) {
+        window.__lenis.start();
+        window.__isUserScrolling = false;
+      }
+      document.dispatchEvent(new Event("qb-loader-done"));
+      requestScrollRefresh();
+      return;
+    }
+
+    setLoading(true);
+    setProgress(1);
     const isContactPage = cleanPath.includes("contact-us");
     const isSportsPage = cleanPath.includes("photos-videos");
     const hasFrameSequence = isHomePage || isContactPage || isSportsPage;
@@ -1469,6 +1484,7 @@ function GlobalLoader() {
         });
         return;
       }
+      hasCompletedInitialLoad = true;
       isFirstLoadRef.current = false;
       setLoading(false);
       document.body.style.overflow = "";
@@ -2631,6 +2647,7 @@ function Hero() {
   const lastHeroWordRef = useRef(words[0]);
 
   const canvasDimsRef = useRef({ width: 0, height: 0, dpr: 1 });
+  const drawRectRef = useRef({ dx: 0, dy: 0, dw: 0, dh: 0 });
   const lastDrawnFrameRef = useRef(-1);
   const contextRef = useRef(null);
 
@@ -2665,44 +2682,38 @@ function Hero() {
       canvasDimsRef.current.height !== height ||
       canvasDimsRef.current.dpr !== dpr
     ) {
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       canvasDimsRef.current = { width, height, dpr };
       contextRef.current = null;
       lastDrawnFrameRef.current = -1;
       const ctx = getCanvasContext();
-      if (ctx) ctx.imageSmoothingQuality = "medium";
+      if (ctx) {
+        ctx.imageSmoothingQuality = "medium";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
     }
+    const imgW = 1280;
+    const imgH = 720;
+    const scale = Math.max(width / imgW, height / imgH);
+    const dw = Math.round(imgW * scale);
+    const dh = Math.round(imgH * scale);
+    const dx = Math.round((width - dw) / 2);
+    const dy = Math.round((height - dh) / 2);
+    drawRectRef.current = { dx, dy, dw, dh };
   }, [getCanvasContext]);
 
-  // Paint helper - strictly draws into existing texture without reallocating canvas dimensions
+  // High-performance paint: direct texture draw with precomputed dimensions
   const paintFrameToCanvas = useCallback((img) => {
     const canvas = canvasRef.current;
     if (!canvas || !img) return false;
-    const imgW = img.naturalWidth || img.width;
-    const imgH = img.naturalHeight || img.height;
-    if (!imgW || !imgH) return false;
     const context = getCanvasContext();
     if (!context) return false;
-    if (!canvasDimsRef.current.width) {
+    if (!drawRectRef.current.dw) {
       updateCanvasDimensions();
     }
-    const { width, height, dpr } = canvasDimsRef.current;
-    if (!width || !height) return false;
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const scale = Math.max(
-      width / imgW,
-      height / imgH,
-    );
-    const imageWidth = imgW * scale;
-    const imageHeight = imgH * scale;
-    context.drawImage(
-      img,
-      Math.round((width - imageWidth) / 2),
-      Math.round((height - imageHeight) / 2),
-      Math.round(imageWidth),
-      Math.round(imageHeight),
-    );
+    const { dx, dy, dw, dh } = drawRectRef.current;
+    context.drawImage(img, dx, dy, dw, dh);
     return true;
   }, [getCanvasContext, updateCanvasDimensions]);
 
@@ -2748,13 +2759,15 @@ function Hero() {
     };
   }, [paintFrameToCanvas]);
 
-  // Repaint immediately when exact playhead frame completes asynchronous decode
+  // Repaint immediately if playhead frame is updated
   useEffect(() => {
     const unsub = heroDecoder.addListener((decodedIdx) => {
-      if (decodedIdx === currentFrameRef.current) {
+      if (decodedIdx === currentFrameRef.current && lastDrawnFrameRef.current !== decodedIdx) {
         const confirmed = heroDecoder.getConfirmedFrame(decodedIdx);
-        if (confirmed?.image) {
-          paintFrameToCanvas(confirmed.image);
+        const img = confirmed?.image || framesRef.current[decodedIdx] || heroFramesCache?.[decodedIdx];
+        if (img) {
+          paintFrameToCanvas(img);
+          lastDrawnFrameRef.current = decodedIdx;
         }
       }
     });
@@ -2814,8 +2827,9 @@ function Hero() {
     const drawFrame = (frame) => {
       heroDecoder.updatePlayhead(frame);
       const confirmed = heroDecoder.getConfirmedFrame(frame);
-      if (confirmed?.image) {
-        const painted = paintFrameToCanvas(confirmed.image);
+      const img = confirmed?.image || framesRef.current[frame] || heroFramesCache?.[frame];
+      if (img) {
+        const painted = paintFrameToCanvas(img);
         if (painted) {
           lastDrawnFrameRef.current = frame;
         }
@@ -2860,7 +2874,7 @@ function Hero() {
         trigger: sectionRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.85,
+        scrub: 0.15,
       },
       onUpdate: () => {
         const frameIndex = Math.min(
@@ -2895,6 +2909,17 @@ function Hero() {
     };
     document.addEventListener("qb-loader-done", onReady);
     window.addEventListener("hero-all-frames-ready", onReady);
+
+    if (areHeroFramesLoaded()) {
+      onReady();
+      requestAnimationFrame(() => {
+        updateCanvasDimensions();
+        tween.scrollTrigger?.refresh();
+        drawFrame(currentFrameRef.current || 0);
+      });
+    }
+
+    requestScrollRefresh();
 
     return () => {
       window.removeEventListener("resize", resize);
@@ -3460,6 +3485,7 @@ function ScrollFrameHero({ variant = "contact" }) {
   const shadeRef = useRef(null);
 
   const canvasDimsRef = useRef({ width: 0, height: 0, dpr: 1 });
+  const drawRectRef = useRef({ dx: 0, dy: 0, dw: 0, dh: 0 });
   const contextRef = useRef(null);
 
   const syncFrames = useCallback(() => {
@@ -3494,43 +3520,37 @@ function ScrollFrameHero({ variant = "contact" }) {
       canvasDimsRef.current.height !== height ||
       canvasDimsRef.current.dpr !== dpr
     ) {
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       canvasDimsRef.current = { width, height, dpr };
       contextRef.current = null;
       lastDrawnFrameRef.current = -1;
       const ctx = getCanvasContext();
-      if (ctx) ctx.imageSmoothingQuality = "medium";
+      if (ctx) {
+        ctx.imageSmoothingQuality = "medium";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
     }
+    const imgW = 1280;
+    const imgH = 720;
+    const scale = Math.max(width / imgW, height / imgH);
+    const dw = Math.round(imgW * scale);
+    const dh = Math.round(imgH * scale);
+    const dx = Math.round((width - dw) / 2);
+    const dy = Math.round((height - dh) / 2);
+    drawRectRef.current = { dx, dy, dw, dh };
   }, [getCanvasContext]);
 
   const paintFrameToCanvas = useCallback((img) => {
     const canvas = canvasRef.current;
     if (!canvas || !img) return false;
-    const imgW = img.naturalWidth || img.width;
-    const imgH = img.naturalHeight || img.height;
-    if (!imgW || !imgH) return false;
     const context = getCanvasContext();
     if (!context) return false;
-    if (!canvasDimsRef.current.width) {
+    if (!drawRectRef.current.dw) {
       updateCanvasDimensions();
     }
-    const { width, height, dpr } = canvasDimsRef.current;
-    if (!width || !height) return false;
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const scale = Math.max(
-      width / imgW,
-      height / imgH,
-    );
-    const imageWidth = imgW * scale;
-    const imageHeight = imgH * scale;
-    context.drawImage(
-      img,
-      Math.round((width - imageWidth) / 2),
-      Math.round((height - imageHeight) / 2),
-      Math.round(imageWidth),
-      Math.round(imageHeight),
-    );
+    const { dx, dy, dw, dh } = drawRectRef.current;
+    context.drawImage(img, dx, dy, dw, dh);
     return true;
   }, [getCanvasContext, updateCanvasDimensions]);
 
@@ -3596,18 +3616,21 @@ function ScrollFrameHero({ variant = "contact" }) {
     };
   }, [variant, isContact, preloader, checker]);
 
-  // Repaint immediately when exact playhead frame completes asynchronous decode
+  // Repaint immediately if playhead frame is updated
   useEffect(() => {
     const unsub = decoder.addListener((decodedIdx) => {
-      if (decodedIdx === currentFrameRef.current) {
+      if (decodedIdx === currentFrameRef.current && lastDrawnFrameRef.current !== decodedIdx) {
         const confirmed = decoder.getConfirmedFrame(decodedIdx);
-        if (confirmed?.image) {
-          paintFrameToCanvas(confirmed.image);
+        const activeCache = isContact ? contactFramesCache : sportsFramesCache;
+        const img = confirmed?.image || framesRef.current[decodedIdx] || activeCache?.[decodedIdx];
+        if (img) {
+          paintFrameToCanvas(img);
+          lastDrawnFrameRef.current = decodedIdx;
         }
       }
     });
     return unsub;
-  }, [decoder, paintFrameToCanvas]);
+  }, [decoder, isContact, paintFrameToCanvas]);
 
   // Immediate paint of first frame on mount
   useEffect(() => {
@@ -3648,8 +3671,10 @@ function ScrollFrameHero({ variant = "contact" }) {
     const drawFrame = (frame) => {
       decoder.updatePlayhead(frame);
       const confirmed = decoder.getConfirmedFrame(frame);
-      if (confirmed?.image) {
-        const painted = paintFrameToCanvas(confirmed.image);
+      const activeCache = isContact ? contactFramesCache : sportsFramesCache;
+      const img = confirmed?.image || framesRef.current[frame] || activeCache?.[frame];
+      if (img) {
+        const painted = paintFrameToCanvas(img);
         if (painted) {
           lastDrawnFrameRef.current = frame;
         }
@@ -3733,7 +3758,7 @@ function ScrollFrameHero({ variant = "contact" }) {
         trigger: sectionRef.current,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.9,
+        scrub: 0.15,
       },
       onUpdate: () => {
         const p = Math.max(0, Math.min(1, playhead.frame / (frameCount - 1)));
@@ -3759,6 +3784,15 @@ function ScrollFrameHero({ variant = "contact" }) {
     };
     const readyEvent = isContact ? "contact-all-frames-ready" : "sports-all-frames-ready";
     window.addEventListener(readyEvent, onAllReady);
+
+    if (checker()) {
+      onLoaderDone();
+      requestAnimationFrame(() => {
+        updateCanvasDimensions();
+        tween.scrollTrigger?.refresh();
+        drawFrame(currentFrameRef.current);
+      });
+    }
 
     requestScrollRefresh();
 

@@ -839,6 +839,8 @@ p {
   display: block;
   object-fit: cover;
   contain: strict;
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 .hero-video {
@@ -15462,6 +15464,8 @@ textarea:focus-visible {
   height: 100%;
   display: block;
   z-index: 1;
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 /* 2. Cinematic Vignette Overlay (Royal Baagh) */
