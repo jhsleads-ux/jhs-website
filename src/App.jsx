@@ -1925,10 +1925,12 @@ function SmoothScroll() {
       const isMoving = e && (Math.abs(e.velocity || 0) > 0.01 || lenis.isScrolling);
       if (isMoving) {
         window.__isUserScrolling = true;
+        document.documentElement.classList.add("is-scrolling");
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(() => {
           window.__isUserScrolling = false;
-        }, 200);
+          document.documentElement.classList.remove("is-scrolling");
+        }, 150);
       }
       ScrollTrigger.update();
     };
@@ -1946,6 +1948,7 @@ function SmoothScroll() {
     return () => {
       clearTimeout(scrollTimer);
       window.__isUserScrolling = false;
+      document.documentElement.classList.remove("is-scrolling");
       cancelScrollRefresh();
       window.removeEventListener("open-admission-modal", onOpenModal);
       window.removeEventListener("close-admission-modal", onCloseModal);
