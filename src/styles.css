@@ -604,6 +604,7 @@ p {
   color: #ba68c8;
 }
 
+/* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
 @keyframes floatBook1 {
 
   0%,
@@ -693,6 +694,7 @@ p {
     opacity: 1;
   }
 }
+*/
 
 /* ============== HERO TITLE ANIMATION ============== */
 .hero-title-animated {
@@ -774,10 +776,20 @@ p {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .gift-text-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 /* ============== SCROLL REVEAL (60fps Optimized) ============== */
 .scroll-reveal {
   opacity: 1;
   transform: none !important;
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 .scroll-reveal.is-visible {
@@ -795,6 +807,8 @@ p {
 .cta.scroll-reveal {
   opacity: 1 !important;
   transform: none !important;
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 /* Maintain visual stability during scrolling: prevent upward translation on sections and section headings */
@@ -2796,7 +2810,8 @@ p {
 .page-hero-content [data-reveal] {
   opacity: 0;
   transform: none;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 .page-hero-content [data-reveal].revealed {
@@ -2808,7 +2823,8 @@ p {
 .content-page [data-reveal] {
   opacity: 0;
   transform: none;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 .section [data-reveal].revealed,
@@ -5351,8 +5367,9 @@ p {
   align-items: center;
   justify-content: center;
   will-change: transform;
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
   transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); */
   z-index: 10;
 }
 
@@ -6474,7 +6491,8 @@ p {
    indistinguishable at this subtlety and keeps layout correct. */
 .page-transition {
   opacity: 1;
-  transition: opacity 0.4s ease;
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.4s ease; */
   min-height: 100vh;
 }
 
@@ -6490,7 +6508,8 @@ p {
   opacity: 0;
   transform: none;
   will-change: opacity;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 [data-reveal].revealed {
@@ -8524,7 +8543,8 @@ body.modal-open {
 [data-reveal] {
   opacity: 0;
   transform: none;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 [data-reveal].revealed {
@@ -8540,9 +8560,10 @@ body.modal-open {
 /* ---------- Clip-path reveal ---------- */
 [data-reveal="clip"] {
   clip-path: inset(100% 0 0 0);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
   transition:
     clip-path 1.1s cubic-bezier(0.76, 0, 0.24, 1),
-    opacity 0.8s ease;
+    opacity 0.8s ease; */
 }
 
 [data-reveal="clip"].revealed {
@@ -8553,22 +8574,26 @@ body.modal-open {
 /* ---------- Scale reveal ---------- */
 [data-reveal="scale"] {
   opacity: 0;
-  transform: scale(0.92);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(0.92); */
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
   transition:
     opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 [data-reveal="scale"].revealed {
   opacity: 1;
-  transform: scale(1);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(1); */
 }
 
 /* ---------- Section entrance ---------- */
 .section-animate {
   opacity: 0;
   transform: none;
-  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1); */
 }
 
 .section-animate.visible {
@@ -8634,12 +8659,15 @@ body.modal-open {
       transparent,
       rgba(8, 103, 162, 0.3),
       transparent);
-  transform: scaleX(0);
-  transition: transform 1.8s cubic-bezier(0.76, 0, 0.24, 1);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scaleX(0); */
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: transform 1.8s cubic-bezier(0.76, 0, 0.24, 1); */
 }
 
 .section-divider.visible {
-  transform: scaleX(1);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scaleX(1); */
 }
 
 /* ---------- Subtle float ---------- */
@@ -8855,11 +8883,13 @@ body.modal-open {
 /* ---------- Global scroll continuity: matches .cinematic-section & .learning-journey-section
    Prevents CSS transitions on transform from fighting GSAP / Lenis / RAF scroll scrubbing.
    Hover transitions remain 100% active when user interacts. ---------- */
+/* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
 html.is-scrolling *,
 html.is-scrolling *::before,
 html.is-scrolling *::after {
   transition-property: opacity, filter, box-shadow, color, background-color !important;
 }
+*/
 
 .fx-parallax,
 img.fx-parallax,
@@ -10823,6 +10853,7 @@ img.fx-parallax,
 /* Floating Book Animation - Continuous gentle bob + subtle rotation.
    Lives on the INNER svg so the container element stays free for GSAP
    (drift, rotation, scroll parallax via --scroll-y). */
+/* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
 @keyframes floatBook {
 
   0%,
@@ -10876,7 +10907,6 @@ img.fx-parallax,
   will-change: transform;
 }
 
-/* alternate rhythm so the books never move in lockstep */
 .floating-book-2 svg {
   animation: floatBookSlow 8s ease-in-out infinite;
 }
@@ -10884,6 +10914,7 @@ img.fx-parallax,
 .floating-book-4 svg {
   animation: floatBookFast 4.5s ease-in-out infinite;
 }
+*/
 
 /* Staggered animation delays (svg is the only child of each book) */
 .floating-book-2 svg {
@@ -11375,7 +11406,8 @@ img.fx-parallax,
 .scroll-fade-up {
   opacity: 0;
   transform: none;
-  transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1); */
 }
 
 .scroll-fade-up.visible {
@@ -11386,42 +11418,51 @@ img.fx-parallax,
 /* Scroll-triggered scale */
 .scroll-scale {
   opacity: 0;
-  transform: scale(0.85);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(0.85); */
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
   transition:
     opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    transform 0.7s cubic-bezier(0.23, 1, 0.32, 1); */
 }
 
 .scroll-scale.visible {
   opacity: 1;
-  transform: scale(1);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(1); */
 }
 
 /* Scroll-triggered slide */
 .scroll-slide-left {
   opacity: 0;
-  transform: translateX(-60px);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: translateX(-60px); */
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
   transition:
     opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); */
 }
 
 .scroll-slide-left.visible {
   opacity: 1;
-  transform: translateX(0);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: translateX(0); */
 }
 
 .scroll-slide-right {
   opacity: 0;
-  transform: translateX(60px);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: translateX(60px); */
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
   transition:
     opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); */
 }
 
 .scroll-slide-right.visible {
   opacity: 1;
-  transform: translateX(0);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: translateX(0); */
 }
 
 /* Spotlight effect */
@@ -11859,7 +11900,8 @@ img.fx-parallax,
   height: 100%;
   transform-style: preserve-3d;
   border-radius: 4px 10px 10px 4px;
-  animation: bookFloat var(--float-dur) ease-in-out infinite;
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  animation: bookFloat var(--float-dur) ease-in-out infinite; */
   filter: drop-shadow(0 16px 24px rgba(11, 33, 49, 0.2));
 }
 
@@ -12952,18 +12994,19 @@ img.fx-parallax,
   opacity: 0;
   z-index: 1;
   pointer-events: none;
-  transform: scale(1.04);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(1.04); */
   transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity;
 }
 
 .sst-image--active {
   opacity: 1;
   z-index: 2;
   pointer-events: auto;
-  transform: scale(1);
+  /* TEMPORARILY DISABLED FOR SCROLL SMOOTHNESS TEST:
+  transform: scale(1); */
 }
 
 .sst-image-badge {
@@ -13495,7 +13538,8 @@ img.fx-parallax,
 .sr-word.sr-visible {
   transform: none;
   opacity: 1;
-  transition: opacity 0.5s ease;
+  /* TEMPORARILY COMMENTED OUT FOR SCROLL SMOOTHNESS TEST (GSAP/ScrollTrigger):
+  transition: opacity 0.5s ease; */
 }
 
 /* =========================================================
@@ -15779,4 +15823,120 @@ textarea:focus-visible {
 .gallery-flythrough-wrap,
 .jhs-flythrough-container {
   contain: layout style;
+}
+
+/* ==========================================================================
+   TEMPORARY DIAGNOSTIC TEST: DISABLE ALL CSS TRANSFORMS & TRANSITIONS
+   Purpose: Test if CSS transform/transition effects cause scrolling shivering, jitter, or lag.
+   HOW TO RESTORE: Simply delete or comment out this entire block to restore all original styles.
+   ========================================================================== */
+
+/* 1. Disable ALL CSS transitions across the entire website */
+*,
+*::before,
+*::after {
+  transition: none !important;
+}
+
+/* 2. Disable continuous CSS transform animations */
+.floating-book,
+.floating-book *,
+.floating-book-inner,
+.floating-book svg,
+.floating-books-band *,
+.subtle-float,
+.pulse-cta,
+.glow-hover,
+.bounce-in,
+.hero-title-animated * {
+  animation: none !important;
+}
+
+/* 3. Disable all scroll-triggered / entrance / reveal transforms */
+[data-reveal],
+[data-reveal="scale"],
+[data-reveal="clip"],
+.scroll-reveal,
+.scroll-fade-up,
+.scroll-scale,
+.scroll-slide-left,
+.scroll-slide-right,
+.section-animate,
+.section-divider,
+.flythrough-3d-world,
+.sst-image,
+.sst-image--active,
+.word-reveal span,
+.text-scramble-char,
+.reveal-word,
+.sr-word {
+  transform: none !important;
+}
+
+/* 4. Disable all card, image, and interactive hover transforms */
+.hover-lift:hover,
+.smooth-scale:hover,
+.gentle-rotate:hover,
+.elastic-hover:hover,
+.magnetic-scale:hover,
+.smooth-glow:hover,
+.img-zoom:hover img,
+.smooth-zoom:hover img,
+.intro-image:hover img,
+.intro-feature-image:hover,
+.intro-feature-image:hover img,
+.image-card:hover,
+.image-card:hover img,
+.image-card:hover *,
+.gallery-tile:hover img,
+.academic-card:hover,
+.academic-card:hover *,
+.journey-card:hover,
+.document-card:hover,
+.document-card:hover *,
+.eligibility-card:hover,
+.blog-card:hover,
+.blog-card:hover *,
+.food-card:hover,
+.story-row:hover,
+.story-row:hover *,
+.story-grid-card:hover,
+.story-grid-card:hover *,
+.honor-card:hover,
+.stat-counter:hover,
+.stat-counter:hover *,
+.pill:hover,
+.circle-cta:hover,
+.magnetic-btn:hover,
+.header-cta:hover,
+.header-cta:hover *,
+.motion-explore-pill:hover,
+.motion-chapter-card:hover,
+.motion-chapter-card:hover *,
+.motion-btn-primary:hover,
+.srs-card:hover,
+.playful-card:hover,
+.glow-hover:hover,
+.jhs-flythrough-media:hover,
+.jhs-flythrough-media:hover *,
+.jhs-flythrough-figure:hover * {
+  transform: none !important;
+}
+
+/* 5. Disable parallax image transforms that scrub during scroll */
+img.fx-parallax,
+.fx-parallax {
+  transform: none !important;
+}
+
+/* 6. Prevent dynamic content-visibility layout shifts during scrolling */
+.blog-card,
+.event-card,
+.document-card,
+.journey-card,
+.timeline-card,
+.disclosure-item,
+.faq-item,
+.story-grid-card {
+  content-visibility: visible !important;
 }
